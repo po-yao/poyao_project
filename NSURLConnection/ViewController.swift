@@ -30,10 +30,9 @@ class ViewController: UIViewController, UITableViewDelegate ,UITableViewDataSour
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell : dataTableViewCell = tableView.dequeueReusableCellWithIdentifier("dataTableViewCell") as! dataTableViewCell
-        
-        cell.cardID.text = json[indexPath.row].id
-        cell.cardName.text = json[indexPath.row].label
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! DataTableViewCell
+        cell.lbID.text = json[indexPath.row].id
+        cell.lbName.text = json[indexPath.row].label
         
         return cell
     }
@@ -41,9 +40,9 @@ class ViewController: UIViewController, UITableViewDelegate ,UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tableView.delegate = self
-        tableView.registerNib(UINib(nibName: "dataTableViewCell", bundle: nil), forCellReuseIdentifier: "dataTableViewCell")
-        connectHttpJson1.main()
-        self.tableView.reloadData()
+        connectHttpJson1.main({
+            self.tableView.reloadData()
+        })
     }
 
     override func didReceiveMemoryWarning() {
@@ -54,10 +53,10 @@ class ViewController: UIViewController, UITableViewDelegate ,UITableViewDataSour
 
 class connectHttpJson: NSObject ,NSURLSessionDelegate {
     
-    func main(){
+    func main(callback: () -> Void){
         post()
         dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
-        get()
+        get(callback)
     }
     
     func post(){
@@ -102,7 +101,7 @@ class connectHttpJson: NSObject ,NSURLSessionDelegate {
         taskPost.resume()
     }
     
-    func get(){
+    func get(callback: () -> Void){
         
         sendString = "jwt " + goodtoken
         print("get key = \(sendString)")
@@ -142,6 +141,9 @@ class connectHttpJson: NSObject ,NSURLSessionDelegate {
                 }
             
             }
+            
+            callback()
+            
         }.resume()
     }
 }
